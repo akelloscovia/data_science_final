@@ -9,6 +9,7 @@ Handles:
 """
 
 from flask import render_template, request, redirect, url_for, flash
+import os
 import math
 
 from flask_login import login_user, logout_user, login_required, current_user
@@ -79,20 +80,28 @@ def bootstrap_admin():
     Creates default admin user if not exists
     """
 
+    # Protect this route in production: require explicit env flag
+    allow = os.environ.get("ALLOW_BOOTSTRAP_ADMIN") == "1"
+
+    if not allow:
+        return (
+            "Bootstrap disabled. To enable, set environment variable ALLOW_BOOTSTRAP_ADMIN=1 "
+            "and call this endpoint."
+        )
+
     user = User.query.filter_by(username="admin").first()
 
-    if user:
-        return "Admin already exists. You can delete this route."
+    # Create or reset admin password
+    if not user:
+        user = User(username="admin")
 
-    new_user = User(
-        username="admin",
-        password=generate_password_hash("admin123")
-    )
+    user.password = generate_password_hash("admin123")
+    user.role = user.role or "admin"
 
-    db.session.add(new_user)
+    db.session.add(user)
     db.session.commit()
 
-    return "Admin user created successfully. Username: admin | Password: admin123"
+    return "Admin user created/updated. Username: admin | Password: admin123"
 
 
 # =========================

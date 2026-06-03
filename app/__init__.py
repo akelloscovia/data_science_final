@@ -31,6 +31,18 @@ def seed_database():
     from app.models.animal import Animal
     from app.models.activity import ActivityRecord
     from app.models.feed import FeedItem
+    from app.models.user import User
+    from werkzeug.security import generate_password_hash
+
+    # Always ensure admin user exists (for Render deployment)
+    if User.query.filter_by(username="admin").first() is None:
+        admin = User(
+            username="admin",
+            password=generate_password_hash("admin123"),
+            role="admin"
+        )
+        db.session.add(admin)
+        db.session.commit()
 
     if Animal.query.first() is not None:
         return
