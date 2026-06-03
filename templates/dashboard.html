@@ -1,0 +1,68 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="page-card">
+    <div class="page-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Welcome back, admin. Monitor goat health, farm status, and prediction analytics from one polished view.</p>
+        </div>
+        <div>
+            <span class="badge badge-success">System online</span>
+        </div>
+    </div>
+
+    <div class="card-grid">
+        <div class="dashboard-card green-card">
+            <h5>Goat Inventory</h5>
+            <h2>{{ total_animals }}</h2>
+            <p>Animals currently tracked in the herd.</p>
+        </div>
+        <div class="dashboard-card blue-card">
+            <h5>Activity Records</h5>
+            <h2>{{ total_activity }}</h2>
+            <p>Activity records imported from the dataset.</p>
+        </div>
+        <div class="dashboard-card orange-card">
+            <h5>Feed Stock</h5>
+            <h2>{{ total_feed | round(1) }} kg</h2>
+            <p>Available feed stock remaining.</p>
+        </div>
+        <div class="dashboard-card purple-card">
+            <h5>Prediction Ready</h5>
+            <h2>Live</h2>
+            <p>Machine learning model is available for real-time predictions.</p>
+        </div>
+    </div>
+
+    <div class="content-box">
+        <h4>Recent Activity</h4>
+        {% if recent_activity %}
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Animal</th>
+                        <th>Label</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in recent_activity %}
+                        <tr>
+                            <td>{{ record.animal.animal_id }}</td>
+                            <td>{{ record.label }}</td>
+                            <td>{{ record.timestamp_ms }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No activity records available yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

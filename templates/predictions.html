@@ -1,0 +1,69 @@
+{% extends 'layout.html' %}
+
+{% block title %}Disease Prediction{% endblock %}
+
+{% block content %}
+
+<div class="page-card">
+    <div class="page-header">
+        <div>
+            <h1>Disease Prediction</h1>
+            <p>Enter sensor values or use the sample defaults to generate a real-time activity prediction.</p>
+        </div>
+    </div>
+
+    <div class="row gx-4 gy-4">
+        <div class="col-lg-6">
+            <div class="form-card">
+                <h5>Sensor Inputs</h5>
+                <p class="text-muted">Provide current goat motion values for prediction.</p>
+                <form method="post">
+                    <div class="form-group">
+                        <label>ax</label>
+                        <input type="text" name="ax" class="form-control" value="{{ sample.ax }}">
+                    </div>
+                    <div class="form-group">
+                        <label>ay</label>
+                        <input type="text" name="ay" class="form-control" value="{{ sample.ay }}">
+                    </div>
+                    <div class="form-group">
+                        <label>az</label>
+                        <input type="text" name="az" class="form-control" value="{{ sample.az }}">
+                    </div>
+                    <div class="form-group">
+                        <label>gx</label>
+                        <input type="text" name="gx" class="form-control" value="{{ sample.gx }}">
+                    </div>
+                    <div class="form-group">
+                        <label>gy</label>
+                        <input type="text" name="gy" class="form-control" value="{{ sample.gy }}">
+                    </div>
+                    <div class="form-group">
+                        <label>gz</label>
+                        <input type="text" name="gz" class="form-control" value="{{ sample.gz }}">
+                    </div>
+                    <button type="submit" class="btn-green">Predict</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="content-box">
+                <h5>Prediction Output</h5>
+                {% if prediction %}
+                    <div class="alert alert-success mt-3">
+                        <h4>Result</h4>
+                        <p class="mb-0"><strong>{{ prediction }}</strong></p>
+                    </div>
+                {% elif error %}
+                    <div class="alert alert-danger mt-3">
+                        {{ error }}
+                    </div>
+                {% else %}
+                    <p>Submit the sensor values to see the goat activity prediction.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

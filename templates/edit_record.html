@@ -1,0 +1,62 @@
+{% extends 'layout.html' %}
+
+{% block title %}Edit Record{% endblock %}
+
+{% block content %}
+
+<div class="page-card">
+    <div class="page-header">
+        <div>
+            <h1>Edit Activity Record</h1>
+            <p>Edit sensor values and label for this record.</p>
+        </div>
+    </div>
+
+    <form method="post">
+        <div class="form-group">
+            <label for="label">Label</label>
+            <input id="label" name="label" class="form-control" value="{{ record.label or '' }}">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                <label for="ax">Ax</label>
+                <input id="ax" name="ax" class="form-control" type="number" step="0.0001" value="{{ record.ax }}">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="ay">Ay</label>
+                <input id="ay" name="ay" class="form-control" type="number" step="0.0001" value="{{ record.ay }}">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="az">Az</label>
+                <input id="az" name="az" class="form-control" type="number" step="0.0001" value="{{ record.az }}">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="timestamp_ms">Timestamp (ms)</label>
+                <input id="timestamp_ms" name="timestamp_ms" class="form-control" type="number" value="{{ record.timestamp_ms }}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                <label for="gx">Gx</label>
+                <input id="gx" name="gx" class="form-control" type="number" step="0.0001" value="{{ record.gx }}">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="gy">Gy</label>
+                <input id="gy" name="gy" class="form-control" type="number" step="0.0001" value="{{ record.gy }}">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="gz">Gz</label>
+                <input id="gz" name="gz" class="form-control" type="number" step="0.0001" value="{{ record.gz }}">
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn btn-secondary" href="{{ url_for('health') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

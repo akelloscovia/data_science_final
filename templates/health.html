@@ -1,0 +1,67 @@
+{% extends 'layout.html' %}
+
+{% block title %}Health{% endblock %}
+
+{% block content %}
+
+<div class="page-card">
+    <div class="page-header">
+        <div>
+            <h1>Health Records</h1>
+            <p>Overview of activity labels and recent sensor-based records.</p>
+        </div>
+        <div>
+            <a class="btn btn-primary" href="{{ url_for('goats') }}">Add Animal</a>
+        </div>
+    </div>
+
+    <div class="card-grid">
+        <div class="dashboard-card green-card">
+            <h5>Label Summary</h5>
+            <ul class="list-unstyled">
+                {% for label, count in label_summary %}
+                    <li>{{ label }}: {{ count }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="dashboard-card blue-card">
+            <h5>Recent Records</h5>
+            <p>{{ recent_records | length }} latest entries</p>
+        </div>
+    </div>
+
+    <div class="content-box">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Animal</th>
+                    <th>Label</th>
+                    <th>Ax</th>
+                    <th>Ay</th>
+                    <th>Az</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in recent_records %}
+                    <tr>
+                        <td>{{ record.animal.animal_id }}</td>
+                        <td>{{ record.label }}</td>
+                        <td>{{ record.ax }}</td>
+                        <td>{{ record.ay }}</td>
+                        <td>{{ record.az }}</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('edit_health', record_id=record.id) }}">Edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">No health records available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

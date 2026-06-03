@@ -1,0 +1,57 @@
+{% extends 'layout.html' %}
+
+{% block title %}Goats{% endblock %}
+
+{% block content %}
+
+<div class="page-card">
+    <div class="page-header">
+        <div>
+            <h1>Goat Inventory</h1>
+            <p>Goat records synced from the imported activity dataset.</p>
+        </div>
+    </div>
+
+    <div class="content-box mb-4">
+        {% if message %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endif %}
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+        <form method="post" class="form-inline gap-2">
+            <div class="form-group">
+                <label for="animal_id">New Animal ID</label>
+                <input id="animal_id" name="animal_id" class="form-control" type="text" placeholder="e.g. G010">
+            </div>
+            <button class="btn btn-primary" type="submit">Add Animal</button>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-striped bg-white">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Record Count</th>
+                    <th>Latest Label</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for animal in animals %}
+                    <tr>
+                        <td>{{ animal.animal_id }}</td>
+                        <td>{{ animal.record_count }}</td>
+                        <td>{{ animal.last_activity_label }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3">No goats found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
