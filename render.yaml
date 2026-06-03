@@ -1,12 +1,15 @@
 services:
   - type: web
-    name: Health Goat Monitoring System
+    name: health-goat-monitoring
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    runtime: python-3.11
+    build:
+      command: pip install -r requirements.txt
+    start:
+      command: gunicorn run:app --bind 0.0.0.0:${PORT}
     envVars:
       - key: SECRET_KEY
-        value: "goat-monitor-secret-key"
+        generateValue: true
       - key: DATABASE_URL
         value: "sqlite:///goat_monitor.db"
