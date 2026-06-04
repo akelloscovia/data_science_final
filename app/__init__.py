@@ -1,22 +1,16 @@
 """
 Application Initialization
 --------------------------
-
 This file creates and configures the Flask application.
-
-Responsibilities:
-1. Create Flask app
-2. Connect Database
-3. Configure Flask-Login
-4. Create database tables
 """
 
 from pathlib import Path
-
 import pandas as pd
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+
+from werkzeug.security import generate_password_hash
 
 # Database object
 db = SQLAlchemy()
@@ -27,15 +21,13 @@ login_manager = LoginManager()
 DATASET_PATH = Path(__file__).resolve().parent.parent / "machine_learning" / "dataset" / "animal_activity_sample.csv"
 
 
-def seed_database():
-    from app.models.animal import Animal
-    from app.models.activity import ActivityRecord
-    from app.models.feed import FeedItem
+# -------------------------
+# ADMIN CREATION (SAFE)
+# -------------------------
+def ensure_admin():
     from app.models.user import User
-    from werkzeug.security import generate_password_hash
 
-    # Always ensure admin user exists (for Render deployment)
-    if User.query.filter_by(username="admin").first() is None:
+    if not User.query.filter_by(username="admin").first():
         admin = User(
             username="admin",
             password=generate_password_hash("admin123"),
@@ -44,24 +36,45 @@ def seed_database():
         db.session.add(admin)
         db.session.commit()
 
-    if Animal.query.first() is not None:
-        return
+
+# -------------------------
+# DATABASE SEEDING (FIXED)
+# -------------------------
+def seed_database():
+    from app.models.animal import Animal
+    from app.models.activity import ActivityRecord
+    from app.models.feed import FeedItem
 
     if not DATASET_PATH.exists():
         return
 
     df = pd.read_csv(DATASET_PATH)
+
     df = df.drop(columns=[col for col in ["Unnamed: 0"] if col in df.columns], errors="ignore")
     df = df.dropna(subset=["animal_ID"]).reset_index(drop=True)
 
     animal_map = {}
+
+    # ✅ FIX: prevent duplicate animal insert
     for animal_code in df["animal_ID"].unique():
+
+        existing_animal = Animal.query.filter_by(
+            animal_id=str(animal_code)
+        ).first()
+
+        if existing_animal:
+            animal_map[animal_code] = existing_animal
+            continue
+
         animal = Animal(animal_id=str(animal_code))
         db.session.add(animal)
         animal_map[animal_code] = animal
 
     db.session.commit()
 
+    # -------------------------
+    # Activity Records
+    # -------------------------
     records = []
     for _, row in df.iterrows():
         animal = animal_map.get(row["animal_ID"])
@@ -83,20 +96,23 @@ def seed_database():
 
     db.session.bulk_save_objects(records)
 
-    default_feeds = [
-        FeedItem(name="Grass Mix", quantity_kg=1800.0, status="Available"),
-        FeedItem(name="Pellet Feed", quantity_kg=1250.0, status="Available"),
-    ]
-    db.session.add_all(default_feeds)
+    # -------------------------
+    # Default feeds (safe insert)
+    # -------------------------
+    if not FeedItem.query.first():
+        default_feeds = [
+            FeedItem(name="Grass Mix", quantity_kg=1800.0, status="Available"),
+            FeedItem(name="Pellet Feed", quantity_kg=1250.0, status="Available"),
+        ]
+        db.session.add_all(default_feeds)
+
     db.session.commit()
 
 
+# -------------------------
+# APP FACTORY
+# -------------------------
 def create_app():
-    """
-    Application Factory
-
-    Creates and returns the Flask app.
-    """
 
     app = Flask(
         __name__,
@@ -104,32 +120,21 @@ def create_app():
         static_folder="../static"
     )
 
-    # Load configuration settings
     app.config.from_object("config.Config")
 
-    # Initialize database
     db.init_app(app)
-
-    # Initialize login manager
     login_manager.init_app(app)
-
-    # Redirect unauthenticated users
     login_manager.login_view = "login"
 
-    # Import User model
     from app.models.user import User
 
     @login_manager.user_loader
     def load_user(user_id):
-        """
-        Loads a user from database
-        using their ID.
-        """
         return User.query.get(int(user_id))
 
-    # Create database tables and seed data
     with app.app_context():
         db.create_all()
+        ensure_admin()
         seed_database()
 
     return app
