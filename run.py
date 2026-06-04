@@ -34,13 +34,14 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(username=username.strip()).first() if username else None
 
         if user and check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for("dashboard"))
 
-        return "<h3 style='color:red'>Invalid Username or Password</h3>"
+        flash("Invalid username or password. Please try again.", "danger")
+        return render_template("login.html"), 401
 
     return render_template("login.html")
 
@@ -91,17 +92,21 @@ def bootstrap_admin():
 
     user = User.query.filter_by(username="admin").first()
 
-    # Create or reset admin password
+    # Create admin only if missing, or reset only when explicitly forced.
     if not user:
         user = User(username="admin")
+        user.password = generate_password_hash("admin123")
+        user.role = "admin"
+        db.session.add(user)
+        db.session.commit()
+        return "Admin user created. Username: admin | Password: admin123"
 
-    user.password = generate_password_hash("admin123")
-    user.role = user.role or "admin"
+    if request.args.get("force") == "1":
+        user.password = generate_password_hash("admin123")
+        db.session.commit()
+        return "Admin password reset. Username: admin | Password: admin123"
 
-    db.session.add(user)
-    db.session.commit()
-
-    return "Admin user created/updated. Username: admin | Password: admin123"
+    return "Admin user already exists. Use ?force=1 to reset the password if needed."
 
 
 # =========================
