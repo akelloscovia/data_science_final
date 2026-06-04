@@ -15,7 +15,7 @@ import math
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app import create_app, db
+from app import create_app, db, get_admin_credentials
 from app.models import Animal, ActivityRecord, FeedItem
 from app.models.user import User
 
@@ -90,21 +90,22 @@ def bootstrap_admin():
             "and call this endpoint."
         )
 
-    user = User.query.filter_by(username="admin").first()
+    admin_username, admin_password = get_admin_credentials()
+    user = User.query.filter_by(username=admin_username).first()
 
     # Create admin only if missing, or reset only when explicitly forced.
     if not user:
-        user = User(username="admin")
-        user.password = generate_password_hash("admin123")
+        user = User(username=admin_username)
+        user.password = generate_password_hash(admin_password)
         user.role = "admin"
         db.session.add(user)
         db.session.commit()
-        return "Admin user created. Username: admin | Password: admin123"
+        return f"Admin user created. Username: {admin_username} | Password: {admin_password}"
 
     if request.args.get("force") == "1":
-        user.password = generate_password_hash("admin123")
+        user.password = generate_password_hash(admin_password)
         db.session.commit()
-        return "Admin password reset. Username: admin | Password: admin123"
+        return f"Admin password reset. Username: {admin_username} | Password: {admin_password}"
 
     return "Admin user already exists. Use ?force=1 to reset the password if needed."
 

@@ -5,6 +5,7 @@ This file creates and configures the Flask application.
 """
 
 from pathlib import Path
+import os
 import pandas as pd
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -24,13 +25,21 @@ DATASET_PATH = Path(__file__).resolve().parent.parent / "machine_learning" / "da
 # -------------------------
 # ADMIN CREATION (SAFE)
 # -------------------------
+
+def get_admin_credentials():
+    username = os.environ.get("ADMIN_USERNAME", "admin")
+    password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    return username, password
+
+
 def ensure_admin():
     from app.models.user import User
 
-    if not User.query.filter_by(username="admin").first():
+    admin_username, admin_password = get_admin_credentials()
+    if not User.query.filter_by(username=admin_username).first():
         admin = User(
-            username="admin",
-            password=generate_password_hash("admin123"),
+            username=admin_username,
+            password=generate_password_hash(admin_password),
             role="admin"
         )
         db.session.add(admin)
