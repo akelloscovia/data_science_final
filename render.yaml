@@ -11,5 +11,3 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        value: "sqlite:///goat_monitor.db"
